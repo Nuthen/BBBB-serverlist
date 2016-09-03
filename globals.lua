@@ -1,2 +1,0 @@
-DEBUG = true
-DETAILED_DEBUG = true
