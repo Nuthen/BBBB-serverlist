@@ -1,3 +1,8 @@
+-- Note: the average values are not very accurate, but they are a decent representation
+-- Love doesn't provide a way to access memory usage,
+-- so the only monitorable memory value is memory used by garbage collection, which is about half as much as real memory usage
+-- Bug: total inData and outData per cycle is not reset properly
+
 Sock = require 'libs.sock'
 
 function resetLog()
@@ -8,11 +13,11 @@ function resetLog()
     }
 end
 
-function setLog()
+function setLog(dt)
     -- log garbage collector memory
     local memory = collectgarbage("count")
 
-    logInfo.gcmemory.total = logInfo.gcmemory.total + memory/10
+    logInfo.gcmemory.total = logInfo.gcmemory.total + memory*dt
 
     if not logInfo.gcmemory.min or memory < logInfo.gcmemory.min then
         logInfo.gcmemory.min = memory
@@ -178,7 +183,9 @@ function love.load()
         server:emitToAll("addressList", addressList)
     end)
 
-    -- 
+    -- called when a server or client disconnects
+    -- if someone is trying to host and client from the same IP, their server might be temporarily removed
+    -- this is an unlikely case, unless someone is insane or a dev. or both.
     server:on("disconnect", function(data, client, peer)
         -- it is a client
         if data == 2 then
@@ -228,5 +235,5 @@ function love.update(dt)
     runTime = runTime + dt
 
     -- update per-frame log values
-    setLog()
+    setLog(dt)
 end
